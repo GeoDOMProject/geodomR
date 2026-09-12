@@ -135,7 +135,7 @@ fetch_and_cache <- function(id, force_download = FALSE, verbose = FALSE, ...) {
     pins::pin_exists(local_board, id) &&
     !check_remote_file_changed(full_url, id, local_board, verbose)) {
     if (verbose) message("Cargando '", id, "' desde cach\u00e9 local (sin cambios remotos).")
-    return(sf::st_as_sf(pins::pin_read(local_board, id)))
+    return(.gd_add_codes(.gd_restore_crs(sf::st_as_sf(pins::pin_read(local_board, id)), id)))
   }
 
   # 2. DESCARGAR (NUEVO O ACTUALIZADO)
@@ -189,7 +189,7 @@ fetch_and_cache <- function(id, force_download = FALSE, verbose = FALSE, ...) {
   # Si recuperamos del caché por fallo, retornamos directamente sin escribir pin
   if (isTRUE(attr(data_sf, "from_cache_fallback"))) {
     attr(data_sf, "from_cache_fallback") <- NULL
-    return(data_sf)
+    return(.gd_add_codes(.gd_restore_crs(data_sf, id)))
   }
 
   # 3. GUARDAR EL OBJETO PROCESADO EN CACHÉ CON METADATOS
@@ -207,9 +207,17 @@ fetch_and_cache <- function(id, force_download = FALSE, verbose = FALSE, ...) {
   )
   if (verbose) message("Pin '", id, "' guardado en cach\u00e9 para uso futuro.")
 
-  return(data_sf)
+  return(.gd_add_codes(.gd_restore_crs(data_sf, id)))
 }
 
+#' Descargar un dataset comunitario de GeoDOM
+#'
+#' @param id Nombre del dataset, sin la extensión JSON.
+#' @param force_download Si es TRUE, descarga nuevamente el dataset.
+#' @param verbose Si es TRUE, muestra mensajes de progreso.
+#' @param ... Reservado para compatibilidad.
+#' @return Una lista con los metadatos y las filas en `data`.
+#' @export
 gd_get_dataset <- function(id, force_download = FALSE, verbose = FALSE, ...) {
   # browser()
   local_board <- get_geodom_cache()

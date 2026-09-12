@@ -4,13 +4,25 @@
 \alias{gd_municipalities}
 \title{Obtener Límites de los Municipios de la República Dominicana}
 \usage{
-gd_municipalities(id = "RD_MUN158", sf = TRUE)
+gd_municipalities(
+  id = "RD_MUN158",
+  sf = TRUE,
+  .parents = FALSE,
+  .levels = NULL
+)
 }
 \arguments{
 \item{id}{Nombre del archivo de datos en el servidor remoto.}
 
 \item{sf}{Lógico. Si es \code{FALSE}, devuelve un data.frame regular sin la
 columna de geometría. Por defecto es \code{TRUE}.}
+
+\item{.parents}{Lógico. Si es \code{TRUE}, agrega columnas de niveles superiores
+disponibles (\code{Provincia} y \code{Region}). Por defecto es \code{FALSE}.}
+
+\item{.levels}{Vector opcional con los niveles superiores específicos a
+agregar. Para municipios acepta \code{"provinces"} y \code{"regions"}. Si se
+proporciona, implica \code{.parents = TRUE}.}
 }
 \value{
 Un objeto de la clase \code{sf} o un \code{data.frame}.
@@ -33,5 +45,8 @@ municipios_sf <- gd_municipalities()
 
 # Cargar solo la tabla de atributos (sin geometría)
 municipios_df <- gd_municipalities(sf = FALSE)
+
+# Cargar municipios con provincia y región
+municipios_padres <- gd_municipalities(.parents = TRUE)
 }
 }

@@ -89,3 +89,35 @@ test_that("gd_clean_municipality_name fuzzy matching accuracy", {
   expect_equal(gd_clean_municipality_name("barahon"), "Barahona") # typo común
   expect_equal(gd_clean_municipality_name("neiva"), "Neiba") # typo común
 })
+
+test_that("gd_municipalities can include parent levels", {
+  municipios <- gd_municipalities(sf = FALSE, .parents = TRUE)
+
+  expect_s3_class(municipios, "data.frame")
+  expect_true(all(c("Provincia", "Region") %in% names(municipios)))
+  expect_equal(nrow(municipios), 158)
+  expect_false(anyNA(municipios$Provincia))
+  expect_false(anyNA(municipios$Region))
+})
+
+test_that("gd_municipalities supports selected parent levels", {
+  municipios <- gd_municipalities(sf = FALSE, .levels = "provinces")
+
+  expect_true("Provincia" %in% names(municipios))
+  expect_false("Region" %in% names(municipios))
+})
+
+test_that("gd_municipalities preserves sf output with parent levels", {
+  municipios <- gd_municipalities(.parents = TRUE)
+
+  expect_s3_class(municipios, "sf")
+  expect_true(all(c("Provincia", "Region", "geometry") %in% names(municipios)))
+  expect_equal(nrow(municipios), 158)
+})
+
+test_that("gd_municipalities rejects invalid parent levels", {
+  expect_error(
+    gd_municipalities(sf = FALSE, .levels = "dm"),
+    "Niveles superiores no válidos"
+  )
+})

@@ -1,6 +1,6 @@
 Package: geodom
 Title: Acceso a un Marco de Datos Geoespaciales Estandarizados para la Republica Dominicana
-Version: 0.4.0
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Daniel E.",
            family = "de la Rosa",
@@ -18,6 +18,9 @@ Description: Provee un conjunto de funciones para descargar y cargar de forma
     divisiones politico-administrativas del pais en sus distintos niveles
     (provincias, municipios, etc.), facilitando analisis reproducibles y la
     integracion con otras herramientas del ecosistema R.
+Depends: R (>= 4.1.0)
+URL: https://github.com/GeoDOMProject/geodomR
+BugReports: https://github.com/GeoDOMProject/geodomR/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -31,6 +34,7 @@ Imports:
     jsonlite,
     magrittr,
     stringr,
+    stringi,
     stringdist,
     cli,
     tidyr,

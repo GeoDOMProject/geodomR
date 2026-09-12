@@ -4,11 +4,12 @@
 .pkg_env <- new.env(parent = emptyenv())
 
 .onLoad <- function(libname, pkgname) {
-  cache_path <- getOption("geodom.cache.path", default = fs::path(fs::path_home_r(), ".geodom"))
+  cache_root <- Sys.getenv("GEODOM_CACHE_DIR", unset = fs::path(fs::path_home_r(), ".geodom"))
+  cache_path <- getOption("geodom.cache.path", default = fs::path(cache_root, "r-v1"))
   fs::dir_create(cache_path)
 
   # 2. Guardar el "board" de cach\u00e9 local en el entorno del paquete.
-  # Usaremos este board para guardar los datos como pines .json para compatibilidad con Python.
+  # Los objetos RDS viven separados de los pines Parquet de Python.
   .pkg_env$geodom_cache_board <- pins::board_folder(cache_path)
 
   # 3. Guardar la URL base para todas las descargas.

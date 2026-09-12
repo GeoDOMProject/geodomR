@@ -123,6 +123,7 @@ gd_detect_fill <- function(data, exclude = NULL) {
 #' }
 #' @export
 gd_map_data <- function(data, fill = NULL, .level = NULL, .name = NULL, .key = NULL) {
+    if (!is.data.frame(data) || nrow(data) == 0L) stop("El dataset debe contener filas.")
     # Detectar nivel administrativo si no se especifica
     info <- gd_detect_level(data, .level, .name, .key)
 
@@ -363,15 +364,29 @@ gd_map_data <- function(data, fill = NULL, .level = NULL, .name = NULL, .key = N
         }
     }
 
+    if (!fill %in% names(data_clean)) stop("La variable de color no existe en los datos.")
+    if (!key_col %in% names(map_geom)) stop("La clave territorial no existe en la geometria.")
+    if (key_col %in% names(.gd_code_parts)) {
+        width <- if (key_col == "BP_CODE") 11L else length(.gd_code_parts[[key_col]]) * 2L
+        data_clean[[name_col]] <- .gd_code(data_clean[[name_col]], width)
+    }
+    valid <- !is.na(data_clean[[name_col]]) & nzchar(as.character(data_clean[[name_col]]))
+    data_clean <- data_clean[valid, , drop = FALSE]
+    if (anyDuplicated(data_clean[[name_col]])) stop("Hay filas duplicadas por unidad territorial. Agrega los datos antes de mapear.")
+    geo_keys <- as.character(map_geom[[key_col]])
+    ambiguous <- unique(geo_keys[duplicated(geo_keys)])
+    if (any(data_clean[[name_col]] %in% ambiguous)) stop("La clave territorial es ambigua. Usa un codigo compuesto como MUN_CODE o BP_CODE.")
+    output_fill <- if (fill %in% setdiff(names(map_geom), key_col)) paste0(fill, "_data") else fill
     # Unir datos con geometrías
     map_data <- map_geom %>%
         dplyr::left_join(
             data_clean,
-            by = stats::setNames(name_col, key_col)
+            by = stats::setNames(name_col, key_col),
+            suffix = c("", "_data"), na_matches = "never"
         )
 
     # Agregar atributo con el nombre del fill para uso posterior
-    attr(map_data, "fill_var") <- fill
+    attr(map_data, "fill_var") <- output_fill
     attr(map_data, "geo_level") <- info[["level"]]
 
     return(map_data)
@@ -493,6 +508,8 @@ gd_geom_sf <- function(data = NULL, ...) {
 #'   - `TRUE`: etiquetas con el nombre geográfico canónico (TOPONIMIA).
 #'   - Una cadena de caracteres: nombre de la columna a usar como etiqueta.
 #' @param label_size Tamaño del texto de las etiquetas. Por defecto 2.5.
+#' @param label_color Color del texto de las etiquetas.
+#' @param title,subtitle,caption Textos opcionales del mapa.
 #' @param .level Nivel administrativo opcional. Si es NULL, se detecta automáticamente.
 #' @param .name Nombre de la variable geográfica en data. Si es NULL, se detecta automáticamente.
 #' @param .key Nombre de la variable clave en los datos geográficos. Si es NULL, se detecta automáticamente.
@@ -520,7 +537,8 @@ gd_geom_sf <- function(data = NULL, ...) {
 #' }
 #' @export
 gd_map <- function(data, fill = NULL, labels = NULL, label_size = 2.5,
-                   .level = NULL, .name = NULL, .key = NULL, ...) {
+                   label_color = "black", title = NULL, subtitle = NULL,
+                   caption = NULL, .level = NULL, .name = NULL, .key = NULL, ...) {
     # Preparar datos (fill se detecta aquí si es NULL)
     map_data <- gd_map_data(data, fill, .level, .name, .key)
 
@@ -548,14 +566,23 @@ gd_map <- function(data, fill = NULL, labels = NULL, label_size = 2.5,
     # Agregar etiquetas si se solicitan
     if (!is.null(labels) && !identical(labels, FALSE)) {
         # Determinar la columna de etiquetas
-        if (isTRUE(labels)) {
+        if (isTRUE(labels) || identical(labels, "name")) {
             label_col <- "TOPONIMIA"
+        } else if (identical(labels, "value")) {
+            label_col <- fill_var
+        } else if (identical(labels, "both")) {
+            label_col <- ".geodom_label"
+            map_data[[label_col]] <- ifelse(
+                is.na(map_data[[fill_var]]),
+                as.character(map_data[["TOPONIMIA"]]),
+                paste(map_data[["TOPONIMIA"]], map_data[[fill_var]], sep = ": ")
+            )
         } else if (is.character(labels) && length(labels) == 1) {
             label_col <- labels
         } else {
             cli::cli_abort(c(
-                "x" = "El argumento 'labels' debe ser TRUE, FALSE, NULL, o un nombre de columna.",
-                "i" = "Ejemplo: labels = TRUE, labels = 'provincia'"
+                "x" = "El argumento 'labels' debe ser TRUE, FALSE, NULL, 'name', 'value', 'both', o un nombre de columna.",
+                "i" = "Ejemplo: labels = TRUE, labels = 'value', labels = 'both'"
             ))
         }
 
@@ -567,7 +594,13 @@ gd_map <- function(data, fill = NULL, labels = NULL, label_size = 2.5,
         }
 
         # Calcular puntos interiores para ubicar las etiquetas
-        centroids <- sf::st_point_on_surface(map_data)
+        centroids <- map_data
+        if (is.na(sf::st_crs(map_data))) {
+            sf::st_geometry(centroids) <- sf::st_point_on_surface(sf::st_geometry(map_data))
+        } else {
+            points <- sf::st_point_on_surface(sf::st_geometry(sf::st_transform(map_data, 32619)))
+            sf::st_geometry(centroids) <- sf::st_transform(points, sf::st_crs(map_data))
+        }
 
         p <- p +
             ggplot2::geom_sf_text(
@@ -576,8 +609,17 @@ gd_map <- function(data, fill = NULL, labels = NULL, label_size = 2.5,
                     geometry = .data[[geo_col]],
                     label = .data[[label_col]]
                 ),
-                size = label_size
+                size = label_size,
+                color = label_color
             )
+    }
+
+    if (!is.null(title) || !is.null(subtitle) || !is.null(caption)) {
+        p <- p + ggplot2::labs(
+            title = title,
+            subtitle = subtitle,
+            caption = caption
+        )
     }
 
     return(p)

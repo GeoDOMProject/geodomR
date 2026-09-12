@@ -9,6 +9,10 @@ gd_map(
   fill = NULL,
   labels = NULL,
   label_size = 2.5,
+  label_color = "black",
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
   .level = NULL,
   .name = NULL,
   .key = NULL,
@@ -28,6 +32,10 @@ gd_map(
 }}
 
 \item{label_size}{Tamaño del texto de las etiquetas. Por defecto 2.5.}
+
+\item{label_color}{Color del texto de las etiquetas.}
+
+\item{title, subtitle, caption}{Textos opcionales del mapa.}
 
 \item{.level}{Nivel administrativo opcional. Si es NULL, se detecta automáticamente.}
 

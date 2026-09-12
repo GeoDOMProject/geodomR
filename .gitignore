@@ -1,1 +1,7 @@
 .Rproj.user
+
+.vscode/
+*.tar.gz
+*.Rcheck/
+catalogo_municipios.csv
+tasa_ivacc_alto_municipios.csv

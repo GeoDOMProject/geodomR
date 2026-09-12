@@ -72,6 +72,11 @@ test_that("gd_clean_prov_name handles error modes correctly", {
   expect_error(gd_clean_prov_name(problem_name, .tol = 0.05, .on_error = "fail"))
 })
 
+test_that("gd_clean_prov_name does not fuzzy-match aggregate labels", {
+  result <- gd_clean_prov_name("Otros", .tol = 0.5, .on_error = "na")
+  expect_true(is.na(result))
+})
+
 test_that("gd_clean_prov_name works with prefixes", {
   # Debe manejar prefijos como "provincia de" - el bug original que se arregló
   expect_equal(gd_clean_prov_name("provincia de azua"), "Azua")

@@ -38,6 +38,15 @@
 #' }
 #' @export
 gd_detect_level <- function(data, .level = NULL, .name = NULL, .key = NULL) {
+  code_levels <- c(BP_CODE = "bparajes", SEC_CODE = "sections", DM_CODE = "dm", MUN_CODE = "municipalities", PROV_CODE = "provinces", REG_CODE = "regions")
+  candidates <- intersect(names(code_levels), names(data))
+  if (!is.null(.name)) candidates <- intersect(candidates, .name)
+  if (!is.null(.key)) candidates <- intersect(candidates, .key)
+  if (!is.null(.level)) candidates <- candidates[code_levels[candidates] == .level]
+  if (length(candidates) && (is.null(.level) || is.null(.name) || is.null(.key))) {
+    candidate <- candidates[[1]]
+    return(list(level = unname(code_levels[[candidate]]), name = candidate, key = candidate, match_count = NULL, total_count = NULL))
+  }
   if (is.null(.level) || is.null(.name) || is.null(.key)) {
     
     # Obtener las opciones de referencia para cada nivel administrativo

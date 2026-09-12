@@ -5,3 +5,9 @@
 ^docs$
 ^pkgdown$
 ^README\.Rmd$
+^\.vscode$
+^\.github$
+^catalogo_municipios\.csv$
+^tasa_ivacc_alto_municipios\.csv$
+^.*\.Rcheck$
+^.*\.tar\.gz$

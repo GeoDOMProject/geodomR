@@ -57,6 +57,21 @@ utils::globalVariables(c(
   invisible(TRUE)
 }
 
+.non_geographic_names <- c(
+  "otros",
+  "otras",
+  "other",
+  "others",
+  "resto",
+  "demas",
+  "demas provincias",
+  "no especificado",
+  "sin especificar",
+  "no aplica",
+  "nacional",
+  "total"
+)
+
 # ── .resolve_parent_ids ─────────────────────────────────────────────────────
 # Resolver IDs padre a partir de un nombre padre y su dataset de alias.
 # Retorna un vector de IDs que coinciden con el nombre dado, o NULL.
@@ -174,6 +189,14 @@ utils::globalVariables(c(
       results[i] <- .handle_no_match(
         current_name, level_label, .on_error,
         msg = paste0(level_label, " name is empty")
+      )
+      next
+    }
+
+    if (current_clean %in% .non_geographic_names) {
+      results[i] <- .handle_no_match(
+        current_name, level_label, .on_error,
+        msg = paste0(level_label, " name '", current_name, "' is an aggregate or non-geographic label")
       )
       next
     }

@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/GeoDOMProject/geodomR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/GeoDOMProject/geodomR/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/GeoDOMProject/geodomR/actions/workflows/validate.yml/badge.svg)](https://github.com/GeoDOMProject/geodomR/actions/workflows/validate.yml)
 <!-- badges: end -->
 
 **geodom** proporciona acceso a un marco de datos geoespaciales
@@ -17,8 +17,8 @@ con detección automática del nivel geográfico.
 Puedes instalar geodom desde GitHub:
 
 ``` r
-# install.packages("pak")
-pak::pak("dnldelarosa/geodomR")
+install.packages("remotes")
+remotes::install_github("GeoDOMProject/geodomR@v1.0.0")
 ```
 
 ## Uso Rápido
@@ -27,6 +27,7 @@ pak::pak("dnldelarosa/geodomR")
 
 ``` r
 library(geodom)
+#> GeoDOM: Usando caché local en 'C:/Users/drdsd/Documents/Projects/GeoDOM/outputs/stable-20260912/cache/r-v1'
 
 # Provincias
 provincias <- gd_provinces()
@@ -54,7 +55,6 @@ datos <- data.frame(
 
 # ¡Solo esto! Todo se detecta automáticamente
 gd_map(datos)
-#> Variable de fill detectada automáticamente: 'poblacion'
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" alt="" width="100%" />
@@ -116,3 +116,24 @@ Dominicana.
 ## Licencia
 
 MIT
+
+## Versión estable 1.0.0
+
+Instalación desde la versión publicada (requiere R 4.1 o posterior y sus
+dependencias):
+
+``` r
+install.packages("remotes")
+remotes::install_github("GeoDOMProject/geodomR@v1.0.0")
+```
+
+La caché de R utiliza `~/.geodom/r-v1`; en Windows está dentro de
+Documents. `GEODOM_CACHE_DIR` cambia la raíz y
+`options(geodom.cache.path = ...)` permite una ruta explícita. Los pines
+de Python permanecen separados. La caché antigua se conserva.
+
+Para unir municipios use `MUN_CODE` (PROV + MUN), y para barrios/parajes
+use `BP_CODE` de 11 caracteres. Las filas duplicadas y las claves
+ambiguas requieren agregación o una clave más precisa antes de mapear.
+Los nombres sin coincidencia no se asignan a una unidad distinta.
+Consulte CHANGELOG.md para el alcance.

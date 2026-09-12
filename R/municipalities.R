@@ -18,6 +18,11 @@ utils::globalVariables(c(
 #' @param id Nombre del archivo de datos en el servidor remoto.
 #' @param sf Lógico. Si es `FALSE`, devuelve un data.frame regular sin la
 #'   columna de geometría. Por defecto es `TRUE`.
+#' @param .parents Lógico. Si es `TRUE`, agrega columnas de niveles superiores
+#'   disponibles (`Provincia` y `Region`). Por defecto es `FALSE`.
+#' @param .levels Vector opcional con los niveles superiores específicos a
+#'   agregar. Para municipios acepta `"provinces"` y `"regions"`. Si se
+#'   proporciona, implica `.parents = TRUE`.
 #'
 #' @return Un objeto de la clase `sf` o un `data.frame`.
 #' @export
@@ -29,15 +34,55 @@ utils::globalVariables(c(
 #'
 #' # Cargar solo la tabla de atributos (sin geometría)
 #' municipios_df <- gd_municipalities(sf = FALSE)
+#'
+#' # Cargar municipios con provincia y región
+#' municipios_padres <- gd_municipalities(.parents = TRUE)
 #' }
-gd_municipalities <- function(id = "RD_MUN158", sf = TRUE) {
+gd_municipalities <- function(id = "RD_MUN158", sf = TRUE, .parents = FALSE, .levels = NULL) {
   data_sf <- fetch_and_cache(id = id)
+
+  if (isTRUE(.parents) || !is.null(.levels)) {
+    data_sf <- .add_municipality_parent_cols(data_sf, .levels = .levels)
+  }
 
   if (!sf) {
     data_sf <- sf::st_drop_geometry(data_sf)
   }
 
   return(data_sf)
+}
+
+.add_municipality_parent_cols <- function(data_sf, .levels = NULL) {
+  valid_levels <- c("regions", "provinces")
+  parent_levels <- if (is.null(.levels)) valid_levels else .levels
+
+  invalid <- setdiff(parent_levels, valid_levels)
+  if (length(invalid) > 0) {
+    cli::cli_abort(c(
+      "x" = paste0("Niveles superiores no v\u00e1lidos para municipios: ", paste(invalid, collapse = ", ")),
+      "i" = paste0("Use uno de: ", paste(valid_levels, collapse = ", "))
+    ))
+  }
+
+  if ("regions" %in% parent_levels) {
+    reg_sf <- gd_regions(sf = FALSE)
+    reg_map <- stats::setNames(
+      gd_clean_region_name(reg_sf$TOPONIMIA, .on_error = "na"),
+      reg_sf$CODREG
+    )
+    data_sf$Region <- unname(reg_map[data_sf$REG])
+  }
+
+  if ("provinces" %in% parent_levels) {
+    prov_sf <- gd_provinces(sf = FALSE)
+    prov_map <- stats::setNames(
+      gd_clean_prov_name(prov_sf$TOPONIMIA, .on_error = "na"),
+      prov_sf$PROV
+    )
+    data_sf$Provincia <- unname(prov_map[data_sf$PROV])
+  }
+
+  data_sf
 }
 
 # Helper function for municipality aliases
