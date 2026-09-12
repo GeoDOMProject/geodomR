@@ -27,7 +27,7 @@ Puedes instalar geodom desde GitHub:
 
 ```r
 install.packages("remotes")
-remotes::install_github("GeoDOMProject/geodomR@v1.0.0")
+remotes::install_github("GeoDOMProject/geodomR@v1.1.0")
 ```
 
 ## Uso Rápido
@@ -114,14 +114,14 @@ gd_clean_prov_name(c("santo domingo", "Elias Pina", "la vega"))
 ## Licencia
 MIT
 
-## Versión estable 1.0.0
+## Versión estable 1.1.0
 
 
 Instalación desde la versión publicada (requiere R 4.1 o posterior y sus dependencias):
 
 ```r
 install.packages("remotes")
-remotes::install_github("GeoDOMProject/geodomR@v1.0.0")
+remotes::install_github("GeoDOMProject/geodomR@v1.1.0")
 ```
 
 La caché de R utiliza `~/.geodom/r-v1`; en Windows está dentro de Documents.
@@ -133,3 +133,27 @@ Para unir municipios use `MUN_CODE` (PROV + MUN), y para barrios/parajes use
 agregación o una clave más precisa antes de mapear. Los nombres sin coincidencia
 no se asignan a una unidad distinta. Consulte CHANGELOG.md para el alcance.
 
+
+## Mapas interactivos (1.1.0)
+
+```r
+library(geodom)
+datos <- data.frame(PROV_CODE = c("01", "25"), valor = c(0, 34))
+gd_map_interactive(datos, fill = "valor", .level = "provinces",
+                   .name = "PROV_CODE", .key = "PROV_CODE", file = "mapa.html")
+```
+
+El resultado es un documento `geodom_html`. `file` guarda el documento sin abrir
+el navegador automáticamente; también puede guardarse con `writeLines()`.
+`context = FALSE` omite las capas adicionales.
+
+El HTML incluye el visor, los estilos y las geometrías. Permite zoom, desplazamiento,
+búsqueda por nombre o código, consulta de atributos y filtros por provincia y municipio.
+Las capas de contexto se identifican como límites sin datos: no se reparten las cifras
+de una provincia entre sus municipios. La leyenda conserva su escala al filtrar.
+
+El fondo predeterminado funciona sin internet después de generar el archivo.
+El fondo opcional de calles OpenStreetMap requiere conexión y conserva la atribución.
+Las etiquetas permanentes se muestran hasta 300 territorios; en capas mayores se
+consultan al señalar o tras filtrar. Los resultados de búsqueda muestran hasta 30
+territorios a la vez; el mapa conserva todos los que coinciden.

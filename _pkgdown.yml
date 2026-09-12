@@ -36,6 +36,7 @@ reference:
     desc: "Funciones para crear mapas coropléticos"
     contents:
       - gd_map
+      - gd_map_interactive
       - gd_map_data
       - gd_ggplot
       - gd_geom_sf
