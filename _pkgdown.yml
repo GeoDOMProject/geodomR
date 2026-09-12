@@ -30,6 +30,7 @@ reference:
       - gd_bparajes
       - gd_zones
       - gd_macroregions
+      - gd_get_dataset
 
   - title: "Mapeo"
     desc: "Funciones para crear mapas coropléticos"
@@ -57,6 +58,8 @@ reference:
       - gd_clean_dm_name
       - gd_clean_section_name
       - gd_clean_bparaje_name
+      - gd_normalize_name
+      - gd_add_normalized_names
 
   - title: "Jerarquía"
     desc: "Funciones para enriquecer datos con niveles administrativos superiores"
