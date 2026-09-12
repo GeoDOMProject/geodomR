@@ -27,7 +27,6 @@ remotes::install_github("GeoDOMProject/geodomR@v1.0.0")
 
 ``` r
 library(geodom)
-#> GeoDOM: Usando caché local en 'C:/Users/drdsd/Documents/Projects/GeoDOM/outputs/stable-20260912/cache/r-v1'
 
 # Provincias
 provincias <- gd_provinces()
